@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BST Insert Terminal</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; font-family: 'Courier New', monospace; padding: 1.5rem; color: #cdd9e5; }
+  .term { background: #0d1117; border: 1px solid #21262d; border-radius: 10px; overflow: hidden; }
+  .titlebar { background: #161b22; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #21262d; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .tname { font-size: 11px; color: #8b949e; flex: 1; text-align: center; }
+  .body { padding: 1.25rem 1.5rem; font-size: 13px; line-height: 1.9; background: #0d1117; overflow-x: auto; }
+  .bline { display: block; color: #cdd9e5; white-space: pre; font-family: 'Courier New', monospace; }
+  pre { background: transparent !important; border: none !important; padding: 0 0 0 1.5rem !important; margin: 0 !important; font-family: 'Courier New', monospace !important; font-size: 13px !important; line-height: 1.9 !important; white-space: pre !important; }
+  .p  { color: #79b8ff; }
+  .m  { color: #adbac7; }
+  .n  { color: #ffd700; }
+  .k  { color: #ff9492; }
+  .ok { color: #6ee7a0; }
+  .er { color: #ff6a69; }
+  .i  { color: #6cb6ff; }
+  .w  { color: #f0c060; }
+  .cursor { display: inline-block; width: 8px; height: 13px; background: #c9d1d9; vertical-align: middle; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50%{ opacity: 0; } }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; }
+  button { font-family: 'Courier New', monospace; font-size: 12px; background: #161b22; border: 1px solid #30363d; color: #adbac7; padding: 6px 14px; border-radius: 5px; cursor: pointer; transition: all 0.12s; }
+  button:hover { border-color: #79b8ff; color: #cdd9e5; }
+  button:disabled { opacity: 0.3; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<div class="term">
+  <div class="titlebar">
+    <span class="dot" style="background:#ff5f56"></span>
+    <span class="dot" style="background:#ffbd2e"></span>
+    <span class="dot" style="background:#27c93f"></span>
+    <span class="tname">python3 — bst_insert.py</span>
+  </div>
+  <div class="body" id="terminal"></div>
+</div>
+
+<div class="btns">
+  <button id="btn1" onclick="runStep(1)">Insert 50 (root)</button>
+  <button id="btn2" onclick="runStep(2)" disabled>Insert 30</button>
+  <button id="btn3" onclick="runStep(3)" disabled>Insert 70</button>
+  <button id="btn4" onclick="runStep(4)" disabled>Insert 20</button>
+  <button id="btn5" onclick="runStep(5)" disabled>Insert 40</button>
+  <button id="btn6" onclick="runStep(6)" disabled>Insert 60</button>
+  <button id="btn7" onclick="runStep(7)" disabled>Insert 80</button>
+  <button onclick="resetAll()">Reset</button>
+</div>
+
+<script>
+var terminal = document.getElementById('terminal');
+
+function ln(html) {
+  var s = document.createElement('span');
+  s.className = 'bline';
+  s.innerHTML = html;
+  terminal.appendChild(s);
+}
+function bl() { ln('&nbsp;'); }
+
+function printTree(rows) {
+  ln('<span class="m">  Tree structure:</span>');
+  var pre = document.createElement('pre');
+  rows.forEach(function(row) {
+    var s = document.createElement('span');
+    s.style.display = 'block';
+    s.innerHTML = row;
+    pre.appendChild(s);
+  });
+  terminal.appendChild(pre);
+  bl();
+}
+
+var trees = {
+  t1: ['    <span class="ok">[50]</span>  \u2190 root', '   (empty tree)'],
+  t2: ['        <span class="n">50</span>', '       /', '     <span class="ok">[30]</span>  \u2190 inserted'],
+  t3: ['        <span class="n">50</span>', '       /  \\', '     <span class="n">30</span>    <span class="ok">[70]</span>  \u2190 inserted'],
+  t4: ['        <span class="n">50</span>', '       /  \\', '     <span class="n">30</span>    <span class="n">70</span>', '    /', '  <span class="ok">[20]</span>  \u2190 inserted'],
+  t5: ['        <span class="n">50</span>', '       /  \\', '     <span class="n">30</span>    <span class="n">70</span>', '    /  \\', '  <span class="n">20</span>  <span class="ok">[40]</span>  \u2190 inserted'],
+  t6: ['        <span class="n">50</span>', '       /  \\', '     <span class="n">30</span>    <span class="n">70</span>', '    /  \\  /', '  <span class="n">20</span>  <span class="n">40</span> <span class="ok">[60]</span>  \u2190 inserted'],
+  t7: ['        <span class="n">50</span>', '       /  \\', '     <span class="n">30</span>    <span class="n">70</span>', '    /  \\  /  \\', '  <span class="n">20</span>  <span class="n">40</span> <span class="n">60</span>  <span class="ok">[80]</span>  \u2190 inserted'],
+};
+
+var steps = [
+  {
+    val: 50, label: 'Insert 50 (root)',
+    lines: [
+      'Inserting <span class="n">50</span> into empty tree...',
+      '  Tree is empty \u2192 <span class="n">50</span> becomes the <span class="i">root</span>',
+      '  <span class="ok">\u2713 Inserted 50 as root.</span>',
+    ],
+    tree: 't1', inorder: '50'
+  },
+  {
+    val: 30, label: 'Insert 30',
+    lines: [
+      'Inserting <span class="n">30</span>...',
+      '  Start at root: <span class="n">50</span>',
+      '  <span class="n">30</span> &lt; <span class="n">50</span>  \u2192  go left',
+      '  Left of <span class="n">50</span> is <span class="k">None</span>  \u2192  insert here',
+      '  <span class="ok">\u2713 Inserted 30 as left child of 50.</span>',
+    ],
+    tree: 't2', inorder: '30  50'
+  },
+  {
+    val: 70, label: 'Insert 70',
+    lines: [
+      'Inserting <span class="n">70</span>...',
+      '  Start at root: <span class="n">50</span>',
+      '  <span class="n">70</span> &gt; <span class="n">50</span>  \u2192  go right',
+      '  Right of <span class="n">50</span> is <span class="k">None</span>  \u2192  insert here',
+      '  <span class="ok">\u2713 Inserted 70 as right child of 50.</span>',
+    ],
+    tree: 't3', inorder: '30  50  70'
+  },
+  {
+    val: 20, label: 'Insert 20',
+    lines: [
+      'Inserting <span class="n">20</span>...',
+      '  Start at root: <span class="n">50</span>',
+      '  <span class="n">20</span> &lt; <span class="n">50</span>  \u2192  go left   (visit <span class="n">30</span>)',
+      '  <span class="n">20</span> &lt; <span class="n">30</span>  \u2192  go left',
+      '  Left of <span class="n">30</span> is <span class="k">None</span>  \u2192  insert here',
+      '  <span class="ok">\u2713 Inserted 20 as left child of 30.</span>',
+    ],
+    tree: 't4', inorder: '20  30  50  70'
+  },
+  {
+    val: 40, label: 'Insert 40',
+    lines: [
+      'Inserting <span class="n">40</span>...',
+      '  Start at root: <span class="n">50</span>',
+      '  <span class="n">40</span> &lt; <span class="n">50</span>  \u2192  go left   (visit <span class="n">30</span>)',
+      '  <span class="n">40</span> &gt; <span class="n">30</span>  \u2192  go right',
+      '  Right of <span class="n">30</span> is <span class="k">None</span>  \u2192  insert here',
+      '  <span class="ok">\u2713 Inserted 40 as right child of 30.</span>',
+    ],
+    tree: 't5', inorder: '20  30  40  50  70'
+  },
+  {
+    val: 60, label: 'Insert 60',
+    lines: [
+      'Inserting <span class="n">60</span>...',
+      '  Start at root: <span class="n">50</span>',
+      '  <span class="n">60</span> &gt; <span class="n">50</span>  \u2192  go right  (visit <span class="n">70</span>)',
+      '  <span class="n">60</span> &lt; <span class="n">70</span>  \u2192  go left',
+      '  Left of <span class="n">70</span> is <span class="k">None</span>  \u2192  insert here',
+      '  <span class="ok">\u2713 Inserted 60 as left child of 70.</span>',
+    ],
+    tree: 't6', inorder: '20  30  40  50  60  70'
+  },
+  {
+    val: 80, label: 'Insert 80',
+    lines: [
+      'Inserting <span class="n">80</span>...',
+      '  Start at root: <span class="n">50</span>',
+      '  <span class="n">80</span> &gt; <span class="n">50</span>  \u2192  go right  (visit <span class="n">70</span>)',
+      '  <span class="n">80</span> &gt; <span class="n">70</span>  \u2192  go right',
+      '  Right of <span class="n">70</span> is <span class="k">None</span>  \u2192  insert here',
+      '  <span class="ok">\u2713 Inserted 80 as right child of 70.</span>',
+    ],
+    tree: 't7', inorder: '20  30  40  50  60  70  80'
+  },
+];
+
+function init() {
+  terminal.innerHTML = '';
+  ln('<span class="m"># BST insertion — step by step</span>');
+  ln('<span class="p">$</span> python3 bst_insert.py');
+  bl();
+  ln('<span class="m">--- Insert values one by one into empty BST ---</span>');
+  bl();
+  var cur = document.createElement('span');
+  cur.className = 'bline'; cur.id = 'cur';
+  cur.innerHTML = '<span class="cursor"></span>';
+  terminal.appendChild(cur);
+}
+
+function runStep(n) {
+  var cur = document.getElementById('cur');
+  if (cur) cur.remove();
+
+  var s = steps[n - 1];
+  ln('<span class="m">--- ' + s.label + ' ---</span>');
+  bl();
+  s.lines.forEach(function(l) { ln(l); });
+  bl();
+  printTree(trees[s.tree]);
+  ln('  Inorder: <span class="ok">' + s.inorder + '</span>');
+  bl();
+
+  document.getElementById('btn' + n).disabled = true;
+  if (n < 7) document.getElementById('btn' + (n + 1)).disabled = false;
+
+  var p = document.createElement('span');
+  p.className = 'bline'; p.id = 'cur';
+  p.innerHTML = '<span class="cursor"></span>';
+  terminal.appendChild(p);
+  p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetAll() {
+  for (var i = 1; i <= 7; i++) {
+    document.getElementById('btn' + i).disabled = (i !== 1);
+  }
+  init();
+}
+
+init();
+</script>
+</body>
+</html>
